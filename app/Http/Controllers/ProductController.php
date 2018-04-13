@@ -8,6 +8,8 @@ use App\Http\Requests\ProductRequest;
 use App\Http\Resources\Product\ProductResource;
 use App\Http\Resources\Product\ProductCollection;
 use Symfony\Component\HttpFoundation\Response;
+use App\Exceptions\ProductNotBelongsToUser;
+use Auth;
 
 class ProductController extends Controller
 {
@@ -24,16 +26,6 @@ class ProductController extends Controller
     public function index()
     {
         return ProductCollection::collection(Product::paginate(20));
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -70,17 +62,6 @@ class ProductController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Product  $product
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Product $product)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -89,6 +70,8 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
+        $this->ProductUserCheck($product);
+
         $request['detail'] = $request->description;
         unset($request['description']);
 
@@ -110,5 +93,13 @@ class ProductController extends Controller
         $product->delete();
 
         return response(null,Response::HTTP_NO_CONTENT);
+    }
+
+    public function ProductUserCheck($product)
+    {
+        if(Auth::id() !== $product->user_id)
+        {
+            throw new ProductNotBelongsToUser;
+        }
     }
 }
