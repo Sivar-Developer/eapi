@@ -11,6 +11,11 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ReviewController extends Controller
 {
+
+    public function __construct()
+    {
+        return $this->middleware('auth:api')->except('index','show');
+    }
     /**
      * Display a listing of the resource.
      *
@@ -19,16 +24,6 @@ class ReviewController extends Controller
     public function index(Product $product)
     {
         return ReviewResource::collection($product->reviews);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -58,26 +53,18 @@ class ReviewController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Review  $review
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Review $review)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \App\Review  $review
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Review $review)
+    public function update(Request $request, Product $product, Review $review)
     {
-        //
+        $review->update($request->all());
+        return response([
+            'data' => new ReviewResource($review)
+        ],Response::HTTP_CREATED);
     }
 
     /**
@@ -86,8 +73,10 @@ class ReviewController extends Controller
      * @param  \App\Review  $review
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Review $review)
+    public function destroy(Product $product, Review $review)
     {
-        //
+        $review->delete();
+
+        return response(null,Response::HTTP_NO_CONTENT);
     }
 }
